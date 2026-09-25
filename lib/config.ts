@@ -1,11 +1,22 @@
 // Business details and service endpoints. Values can be overridden with environment variables (see .env.example).
+
+// An environment variable that is missing, empty or only spaces counts as "not set" (hosting dashboards often save empty values)
+const env = (value: string | undefined, fallback: string) => (value && value.trim() ? value.trim() : fallback);
+
+// Absolute URL with protocol and no trailing slash; "robotrick.net" becomes "https://robotrick.net"; invalid values use the fallback
+const absoluteUrl = (value: string | undefined, fallback: string) => {
+  const raw = env(value, fallback);
+  try { return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).toString().replace(/\/$/, ''); }
+  catch { return fallback; }
+};
+
 export const SITE = {
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.robotrick.net',
+  url: absoluteUrl(process.env.NEXT_PUBLIC_SITE_URL, 'https://www.robotrick.net'),
   // The backend robotrick.net uses today. Paths below are relative to it (it already ends in /api).
-  apiBase: (process.env.NEXT_PUBLIC_API_BASE ?? 'https://robotrick-backend-production.up.railway.app/api').replace(/\/$/, ''),
+  apiBase: absoluteUrl(process.env.NEXT_PUBLIC_API_BASE, 'https://robotrick-backend-production.up.railway.app/api'),
   // Where the existing dashboard app lives ('' = same domain). After sign-in, students go to /student, staff to /dashboard.
-  dashboardUrl: (process.env.NEXT_PUBLIC_DASHBOARD_URL ?? '').replace(/\/$/, ''),
-  gaId: process.env.NEXT_PUBLIC_GA_ID ?? '', // current GA4 property: G-JZZ5RPMDBG — set once the owner confirms reuse
+  dashboardUrl: env(process.env.NEXT_PUBLIC_DASHBOARD_URL, '').replace(/\/$/, ''),
+  gaId: env(process.env.NEXT_PUBLIC_GA_ID, ''), // current GA4 property: G-JZZ5RPMDBG — set once the owner confirms reuse
   phoneDisplay: '+963 942 060 440',
   phoneTel: '+963942060440',
   whatsapp: '963942060440',
